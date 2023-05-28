@@ -1,6 +1,7 @@
-import { action, makeAutoObservable } from "mobx";
+import { action, computed, makeAutoObservable } from "mobx";
 import { AuthenticateDTO } from "@/services";
 import { IResponseError, ObjectType } from "@/models";
+import { RootStore } from "./Root";
 
 interface IAuthStore<AuthData extends ObjectType> {
   authenticated?: boolean;
@@ -15,13 +16,20 @@ export default class AuthStore<AuthData extends ObjectType> {
     isLoading: true,
   };
 
-  constructor() {
+  rootStore: RootStore;
+  constructor(root: RootStore) {
+    this.rootStore = root;
     makeAutoObservable<AuthStore<AuthData>>(this, {
       setAuthData: action,
       setAuthenticated: action,
       setError: action,
       setLoading: action,
+      getAuthData: computed,
     });
+  }
+
+  get getAuthData(): AuthData {
+    return this.state.authData as AuthData;
   }
 
   get getAuthenticated() {

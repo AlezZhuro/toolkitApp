@@ -79,3 +79,5 @@ export default class AuthController {
     this._authStore.setAuthenticated(false);
   }
 }
+
+export type AuthControllerType = AuthController

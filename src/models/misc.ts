@@ -20,6 +20,7 @@ export enum StorageKey {
 
 export enum ResponseErrorType {
   BadVerificationCode = "bad_verification_code",
+  BadCredentials = "Bad credentials",
 }
 
 // export interface LinkItem {

@@ -1,5 +1,4 @@
 import { AxiosInstance, AxiosError, AxiosRequestConfig } from "axios";
-import { AuthenticateDTO, storage } from "@/services";
 import {
   ResponseErrorType,
   RoutePath,
@@ -7,6 +6,7 @@ import {
   StorageType,
 } from "@/models";
 import { isIResponseError } from "@/utils";
+import { storage, AuthenticateDTO } from "src/services";
 
 export const token = (axiosInstance: AxiosInstance) => {
   axiosInstance.interceptors.request.use((config: AxiosRequestConfig) => {
