@@ -1,9 +1,10 @@
 import { makeAutoObservable } from "mobx";
-import { Repository } from "@/gql/graphql";
+import { NodeRepoFragment, RepoLastCommitAttrFragment, Repository, RepositoryAttrFragment } from "@/gql/graphql";
 import { RootStore } from "./Root";
+import { ViewerReposType } from "@/controllers";
 
 interface IRepositoriesStore {
-  viewerRepos: Repository[];
+  viewerRepos: RepositoryAttrFragment[];
   searchedRepos: Repository[];
   selectedRepo: any;
 }
@@ -31,7 +32,7 @@ export default class RepositoriesStore {
     return this.state.selectedRepo;
   }
 
-  setViewerRepos(repos: Repository[]) {
+  setViewerRepos(repos: RepositoryAttrFragment[]) {
     this.state.viewerRepos = repos;
   }
 

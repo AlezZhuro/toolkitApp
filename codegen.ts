@@ -2,11 +2,15 @@ import { CodegenConfig } from "@graphql-codegen/cli";
 
 const config: CodegenConfig = {
   schema: "schema.docs.graphql",
-  documents: ["src/**/*.tsx"],
+  documents: ["src/**/*.ts"],
   generates: {
     "./src/gql/": {
       preset: "client",
-      plugins: ["typescript", "typescript-graphql-request"],
+      presetConfig: {
+        fragmentMasking: { unmaskFunctionName: "getFragmentData" },
+      },
+
+      plugins: [],
       config: {
         documentMode: "string",
       },

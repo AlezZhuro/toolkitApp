@@ -6,7 +6,7 @@ import {
   StorageType,
 } from "@/models";
 import { isIResponseError } from "@/utils";
-import { storage, AuthenticateDTO } from "src/services";
+import { storage, AuthenticateDTO } from "@/services";
 
 export const token = (axiosInstance: AxiosInstance) => {
   axiosInstance.interceptors.request.use((config: AxiosRequestConfig) => {
