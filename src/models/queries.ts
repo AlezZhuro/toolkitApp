@@ -24,8 +24,8 @@ export const ViewerRepositories = graphql(`
 `);
 
 export const SearchReposBySubString = graphql(`
-  query SearchReposBySubString($query: String!, $count: Int!) {
-    search(query: $query, type: REPOSITORY, first: $count) {
+  query SearchReposBySubString($query: String!, $count: Int!, $after: String, $before: String) {
+    search(query: $query, type: REPOSITORY, first: $count, after: $after, before: $before) {
       pageInfo {
         endCursor
         hasNextPage

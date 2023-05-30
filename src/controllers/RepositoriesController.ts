@@ -51,17 +51,25 @@ export default class RepositoriesController {
     }
   }
 
-  async searchReposByString(searchString: string) {
+  async searchReposByString(props: {
+    searchString: string;
+    after?: string | undefined;
+    before?: string | undefined;
+  }) {
     try {
-      const { search } = await this._api.request<
-        SearchReposBySubStringQuery,
-        SearchReposBySubStringQueryVariables
-      >(SearchReposBySubString.toString(), {
-        count: NUMBER_PER_PAGE,
-        query: searchString,
-      });
-
+      const { search } = await this._api.request<SearchReposBySubStringQuery>(
+        SearchReposBySubString.toString(),
+        {
+          count: NUMBER_PER_PAGE,
+          query: props.searchString,
+          after: props.after ?? undefined,
+          before: props.before ?? undefined,
+        }
+      );
+      search.repositoryCount;
+      search.pageInfo;
       this._store.setSearchedRepos(search?.edges as SearchItemAttrFragment[]);
+      return { allCount: search.repositoryCount, pageInfo: search.pageInfo };
     } catch (error) {
       console.log("searchReposByStringError:", error);
     } finally {

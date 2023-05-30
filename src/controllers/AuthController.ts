@@ -3,7 +3,7 @@ import {
   AuthenticateDTO,
   StorageEntityType,
 } from "@/services";
-import { StorageKey, StorageType } from "@/models";
+import { RoutePath, StorageKey, StorageType } from "@/models";
 import { AuthStoreType } from "@/store/AuthStore";
 import { isIResponseError } from "@/utils";
 

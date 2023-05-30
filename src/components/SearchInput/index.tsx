@@ -1,11 +1,14 @@
 import { ChangeEvent, useCallback, useEffect, useRef } from "react";
 import { useDebounce } from "@/hooks";
 import React from "react";
+import { useSearchParams } from "react-router-dom";
 
 type Props = {
   onTypingEnd: (searchString: string) => void;
 };
 export const SearchInput: React.FC<Props> = ({ onTypingEnd }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const [val, setVal] = React.useState("");
   const [debouncedValue, setDebouncedValue] = React.useState("");
 
@@ -25,8 +28,19 @@ export const SearchInput: React.FC<Props> = ({ onTypingEnd }) => {
   );
 
   useEffect(() => {
+    const urlSearchParam = searchParams.get("search");
+    if (urlSearchParam && urlSearchParam.length > 0) {
+      setVal(urlSearchParam);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     onTypingEnd(debouncedValue.trim());
-    console.log(debouncedValue);
+    if (debouncedValue && debouncedValue.length > 0) {
+      setSearchParams(`search=${val}`);
+    } else {
+      setSearchParams("");
+    }
   }, [debouncedValue]);
 
   return (

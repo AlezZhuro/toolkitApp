@@ -4,7 +4,7 @@ export enum Language {
 }
 
 export enum RoutePath {
-  home = "/",
+  home = "/home",
   login = "/login",
   repository = "/repository",
 }

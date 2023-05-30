@@ -29126,6 +29126,8 @@ export type ViewerRepositoriesQueryQuery = { __typename?: 'Query', viewer: { __t
 export type SearchReposBySubStringQueryVariables = Exact<{
   query: Scalars['String']['input'];
   count: Scalars['Int']['input'];
+  after: InputMaybe<Scalars['String']['input']>;
+  before: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
@@ -29402,8 +29404,14 @@ fragment langInRepo on LanguageConnection {
   }
 }`) as unknown as TypedDocumentString<ViewerRepositoriesQueryQuery, ViewerRepositoriesQueryQueryVariables>;
 export const SearchReposBySubStringDocument = new TypedDocumentString(`
-    query SearchReposBySubString($query: String!, $count: Int!) {
-  search(query: $query, type: REPOSITORY, first: $count) {
+    query SearchReposBySubString($query: String!, $count: Int!, $after: String, $before: String) {
+  search(
+    query: $query
+    type: REPOSITORY
+    first: $count
+    after: $after
+    before: $before
+  ) {
     pageInfo {
       endCursor
       hasNextPage
@@ -58610,6 +58618,8 @@ export type ViewerRepositoriesQueryQuery = { __typename?: 'Query', viewer: { __t
 export type SearchReposBySubStringQueryVariables = Exact<{
   query: Scalars['String']['input'];
   count: Scalars['Int']['input'];
+  after: InputMaybe<Scalars['String']['input']>;
+  before: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
