@@ -12,15 +12,15 @@ export const AppRouter = observer(() => {
   const { authontroller } = useContext(ControllersContext);
   const { authStore } = useContext(StoresContext);
 
-  const isAuth = authStore.getAuthenticated;
-
   useEffect(() => {
     authontroller.initAuth();
+
+    const isAuth = authStore.getAuthenticated;
 
     if (!isAuth && location.pathname !== RoutePath.login) {
       navigate(RoutePath.login, { replace: true });
     }
-  }, [isAuth]);
+  }, []);
 
   return (
     <Routes>

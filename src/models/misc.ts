@@ -22,22 +22,6 @@ export enum ResponseErrorType {
   BadVerificationCode = "bad_verification_code",
   BadCredentials = "Bad credentials",
 }
-
-// export interface LinkItem {
-//   text: string | ReactNode;
-//   to?: string;
-//   onClick?: () => void;
-// }
-
-// export interface LocationState extends Location {
-//   state: {
-//     routeFrom?: string;
-//     routeTo?: string;
-//     routeDelta?: number;
-//     messageId?: number;
-//   };
-// }
-
 export type ObjectType = Record<string, unknown> | null | undefined;
 
 export interface IResponseError {
@@ -53,4 +37,30 @@ export interface IPaginatedProps {
 
 export interface IPaginatedResponse<Type> extends IPaginatedProps {
   items: Type[];
+}
+
+export interface SerchedRepo {
+  id: string;
+  name: string;
+  url: string;
+  description?: string;
+  descriptionHTML: any;
+  stargazerCount: number;
+  languages?: {
+    edges?: {
+      node: {
+        name: string;
+      };
+    }[];
+  };
+  owner: {
+    avatarUrl: string;
+    login: string;
+    url: string;
+  };
+  defaultBranchRef: {
+    target: {
+      pushedDate: Date;
+    };
+  };
 }

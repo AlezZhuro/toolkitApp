@@ -9,10 +9,12 @@ const config: CodegenConfig = {
       presetConfig: {
         fragmentMasking: { unmaskFunctionName: "getFragmentData" },
       },
-
-      plugins: [],
+      plugins: ["typescript", "typescript-operations"],
       config: {
         documentMode: "string",
+        avoidOptionals: true,
+        immutableTypes: true,
+        skipTypeName: true,
       },
     },
   },

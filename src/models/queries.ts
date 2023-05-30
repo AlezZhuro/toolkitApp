@@ -1,4 +1,5 @@
 import { graphql } from "@/gql";
+import { gql } from "graphql-request";
 
 export const ViewerRepositories = graphql(`
   query ViewerRepositoriesQuery($count: Int!) {
@@ -22,9 +23,38 @@ export const ViewerRepositories = graphql(`
   }
 `);
 
+export const SearchReposBySubString = graphql(`
+  query SearchReposBySubString($query: String!, $count: Int!) {
+    search(query: $query, type: REPOSITORY, first: $count) {
+      pageInfo {
+        endCursor
+        hasNextPage
+        hasPreviousPage
+        startCursor
+      }
+      repositoryCount
+      edges {
+        ...searchItemAttr
+      }
+    }
+  }
+`);
+
+export const SearchItemAttr = graphql(`
+  fragment searchItemAttr on SearchResultItemEdge {
+    cursor
+    node {
+      ... on Repository {
+        ...nodeRepo
+        ...repoLastCommitAttr
+      }
+    }
+  }
+`);
+
 export const ReporitoryAttr = graphql(`
   fragment repositoryAttr on RepositoryEdge {
-    __typename
+    cursor
     node {
       ...nodeRepo
       ...repoLastCommitAttr
@@ -34,11 +64,13 @@ export const ReporitoryAttr = graphql(`
 
 export const NodeRepo = graphql(`
   fragment nodeRepo on Repository {
-    __typename
     id
     name
     stargazerCount
     url
+    languages(first: 100) {
+      ...langInRepo
+    }
     owner {
       ...repoOwn
     }
@@ -47,7 +79,6 @@ export const NodeRepo = graphql(`
 
 export const RepositoryOwner = graphql(`
   fragment repoOwn on RepositoryOwner {
-    __typename
     id
     login
     url
@@ -57,7 +88,6 @@ export const RepositoryOwner = graphql(`
 
 export const RepositoryLastCommit = graphql(`
   fragment repoLastCommitAttr on Repository {
-    __typename
     defaultBranchRef {
       target {
         ...commitAttr
@@ -68,8 +98,48 @@ export const RepositoryLastCommit = graphql(`
 
 export const CommitFragment = graphql(`
   fragment commitAttr on Commit {
-    __typename
-    message
     pushedDate
   }
 `);
+
+export const LangInRepo = graphql(`
+  fragment langInRepo on LanguageConnection {
+    edges {
+      node {
+        name
+      }
+    }
+  }
+`);
+
+export const SearchRepoByName = gql`
+  query SearchRepoByName($name: String!, $owner: String!) {
+    repository(name: $name, owner: $owner) {
+      id
+      name
+      url
+      description
+      descriptionHTML
+      languages(first: 100) {
+        edges {
+          node {
+            name
+          }
+        }
+      }
+      owner {
+        avatarUrl
+        login
+        url
+      }
+      stargazerCount
+      defaultBranchRef {
+        target {
+          ... on Commit {
+            pushedDate
+          }
+        }
+      }
+    }
+  }
+`;

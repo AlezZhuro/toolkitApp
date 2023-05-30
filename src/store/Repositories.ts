@@ -1,19 +1,24 @@
 import { makeAutoObservable } from "mobx";
-import { NodeRepoFragment, RepoLastCommitAttrFragment, Repository, RepositoryAttrFragment } from "@/gql/graphql";
+import {
+  Repository,
+  RepositoryAttrFragment,
+  SearchItemAttrFragment,
+  SearchResultItemEdge,
+} from "@/gql/graphql";
 import { RootStore } from "./Root";
-import { ViewerReposType } from "@/controllers";
+import { SerchedRepo } from "@/models";
 
 interface IRepositoriesStore {
   viewerRepos: RepositoryAttrFragment[];
-  searchedRepos: Repository[];
-  selectedRepo: any;
+  searchedRepos: SearchItemAttrFragment[];
+  selectedRepo: SerchedRepo | undefined
 }
 
 export default class RepositoriesStore {
   protected readonly state: IRepositoriesStore = {
     viewerRepos: [],
     searchedRepos: [],
-    selectedRepo: {},
+    selectedRepo: undefined,
   };
 
   rootStore: RootStore;
@@ -36,11 +41,11 @@ export default class RepositoriesStore {
     this.state.viewerRepos = repos;
   }
 
-  setSearchedRepos(repos: Repository[]) {
+  setSearchedRepos(repos: SearchItemAttrFragment[]) {
     this.state.searchedRepos = repos;
   }
 
-  setSelectedRepo(repo: any) {
+  setSelectedRepo(repo: SerchedRepo) {
     this.state.selectedRepo = repo;
   }
 }

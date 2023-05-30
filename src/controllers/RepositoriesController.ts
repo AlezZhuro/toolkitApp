@@ -4,10 +4,20 @@ import {
   ViewerRepositoriesQueryQuery,
   ViewerRepositoriesQueryQueryVariables,
   RepositoryAttrFragment,
+  SearchReposBySubStringQueryVariables,
+  SearchReposBySubStringQuery,
+  SearchItemAttrFragment,
+  SearchRepoByNameQuery,
+  SearchRepoByNameQueryVariables,
 } from "@/gql/graphql";
 
-import { ViewerRepositories } from "@/models/queries";
+import {
+  SearchRepoByName,
+  SearchReposBySubString,
+  ViewerRepositories,
+} from "@/models/queries";
 import { NUMBER_PER_PAGE } from "@/constants";
+import { SerchedRepo } from "src/models";
 
 export default class RepositoriesController {
   private readonly _store: RepositoriesStoreType;
@@ -38,6 +48,39 @@ export default class RepositoriesController {
       console.log("fetchViewerRepos error", error);
     } finally {
       console.log("fetchViewerRepos finally");
+    }
+  }
+
+  async searchReposByString(searchString: string) {
+    try {
+      const { search } = await this._api.request<
+        SearchReposBySubStringQuery,
+        SearchReposBySubStringQueryVariables
+      >(SearchReposBySubString.toString(), {
+        count: NUMBER_PER_PAGE,
+        query: searchString,
+      });
+
+      this._store.setSearchedRepos(search?.edges as SearchItemAttrFragment[]);
+    } catch (error) {
+      console.log("searchReposByStringError:", error);
+    } finally {
+      console.log("searchReposByStringFinally");
+    }
+  }
+
+  async searchRepoByName(ownerName: string, repoName: string) {
+    try {
+      const { repository } = await this._api.request<
+        SearchRepoByNameQuery,
+        SearchRepoByNameQueryVariables
+      >(SearchRepoByName.toString(), { name: repoName, owner: ownerName });
+
+      this._store.setSelectedRepo(repository as SerchedRepo);
+    } catch (error) {
+      console.log("searchRepoByName finally:", error);
+    } finally {
+      console.log("searchRepoByName finally");
     }
   }
 }

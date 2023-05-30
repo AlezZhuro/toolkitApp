@@ -11,3 +11,5 @@ export const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET;
 
 export const STORAGE_KEY = "github_app";
 export const NUMBER_PER_PAGE = 10;
+export const REPO_OWNER_KEY = 'owner';
+export const REPO_NAME_KEY = 'name';

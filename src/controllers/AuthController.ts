@@ -26,7 +26,7 @@ export default class AuthController {
     return this._api.authorizeLink;
   }
 
-  initAuth() {
+  async initAuth() {
     try {
       this._authStore.setLoading(true);
 
