@@ -1,57 +1,59 @@
-import { ChangeEvent, useCallback, useEffect, useRef } from "react";
+import { ChangeEvent, useCallback, useEffect } from "react";
 import { useDebounce } from "@/hooks";
 import React from "react";
-import { useSearchParams } from "react-router-dom";
 
 type Props = {
   onTypingEnd: (searchString: string) => void;
+  value?: string;
 };
-export const SearchInput: React.FC<Props> = ({ onTypingEnd }) => {
-  const [searchParams, setSearchParams] = useSearchParams();
+export const SearchInput: React.FC<Props> = React.memo(
+  ({ onTypingEnd, value = "" }) => {
+    const [inputString, setInputString] = React.useState(value);
+    const [debouncedValue, setDebouncedValue] = React.useState("");
 
-  const [val, setVal] = React.useState("");
-  const [debouncedValue, setDebouncedValue] = React.useState("");
+    useDebounce(
+      () => {
+        setDebouncedValue(inputString);
+      },
+      2000,
+      [inputString]
+    );
 
-  useDebounce(
-    () => {
-      setDebouncedValue(val);
-    },
-    2000,
-    [val]
-  );
+    useEffect(() => {
+      if (value !== inputString) {
+        setInputString(value);
+      }
+    }, [value]);
 
-  const inputHandle = useCallback(
-    ({ currentTarget }: ChangeEvent<HTMLInputElement>) => {
-      setVal(currentTarget.value);
-    },
-    []
-  );
+    const inputHandle = useCallback(
+      ({ currentTarget }: ChangeEvent<HTMLInputElement>) => {
+        setInputString(currentTarget.value);
+      },
+      []
+    );
 
-  useEffect(() => {
-    const urlSearchParam = searchParams.get("search");
-    if (urlSearchParam && urlSearchParam.length > 0) {
-      setVal(urlSearchParam);
-    }
-  }, [searchParams]);
+    useEffect(() => {
+      if (debouncedValue && debouncedValue.length > 0) {
+        onTypingEnd(debouncedValue);
+      }
+    }, [debouncedValue]);
 
-  useEffect(() => {
-    onTypingEnd(debouncedValue.trim());
-    if (debouncedValue && debouncedValue.length > 0) {
-      setSearchParams(`search=${val}`);
-    } else {
-      setSearchParams("");
-    }
-  }, [debouncedValue]);
+    useEffect(() => {
+      if (!inputString.length) {
+        onTypingEnd(inputString);
+      }
+    }, [inputString]);
 
-  return (
-    <label>
-      Repositories
-      <input
-        type="text"
-        value={val}
-        placeholder="Type repo name..."
-        onChange={inputHandle}
-      />
-    </label>
-  );
-};
+    return (
+      <label>
+        Repositories
+        <input
+          type="text"
+          value={inputString}
+          placeholder="Type repo name..."
+          onChange={inputHandle}
+        />
+      </label>
+    );
+  }
+);

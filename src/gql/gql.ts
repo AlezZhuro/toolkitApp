@@ -15,7 +15,7 @@ import * as types from './graphql';
  */
 const documents = {
     "\n  query ViewerRepositoriesQuery($count: Int!) {\n    viewer {\n      login\n      name\n      repositories(first: $count) {\n        edges {\n          ...repositoryAttr\n          cursor\n        }\n        totalCount\n        pageInfo {\n          endCursor\n          hasNextPage\n          hasPreviousPage\n          startCursor\n        }\n      }\n    }\n  }\n": types.ViewerRepositoriesQueryDocument,
-    "\n  query SearchReposBySubString($query: String!, $count: Int!, $after: String, $before: String) {\n    search(query: $query, type: REPOSITORY, first: $count, after: $after, before: $before) {\n      pageInfo {\n        endCursor\n        hasNextPage\n        hasPreviousPage\n        startCursor\n      }\n      repositoryCount\n      edges {\n        ...searchItemAttr\n      }\n    }\n  }\n": types.SearchReposBySubStringDocument,
+    "\n  query SearchReposBySubString($query: String!, $first: Int,$last: Int, $after: String, $before: String) {\n    search(query: $query, type: REPOSITORY, first: $first, last: $last, after: $after, before: $before) {\n      pageInfo {\n        endCursor\n        hasNextPage\n        hasPreviousPage\n        startCursor\n      }\n      repositoryCount\n      edges {\n        ...searchItemAttr\n      }\n    }\n  }\n": types.SearchReposBySubStringDocument,
     "\n  fragment searchItemAttr on SearchResultItemEdge {\n    cursor\n    node {\n      ... on Repository {\n        ...nodeRepo\n        ...repoLastCommitAttr\n      }\n    }\n  }\n": types.SearchItemAttrFragmentDoc,
     "\n  fragment repositoryAttr on RepositoryEdge {\n    cursor\n    node {\n      ...nodeRepo\n      ...repoLastCommitAttr\n    }\n  }\n": types.RepositoryAttrFragmentDoc,
     "\n  fragment nodeRepo on Repository {\n    id\n    name\n    stargazerCount\n    url\n    languages(first: 100) {\n      ...langInRepo\n    }\n    owner {\n      ...repoOwn\n    }\n  }\n": types.NodeRepoFragmentDoc,
@@ -33,7 +33,7 @@ export function graphql(source: "\n  query ViewerRepositoriesQuery($count: Int!)
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */
-export function graphql(source: "\n  query SearchReposBySubString($query: String!, $count: Int!, $after: String, $before: String) {\n    search(query: $query, type: REPOSITORY, first: $count, after: $after, before: $before) {\n      pageInfo {\n        endCursor\n        hasNextPage\n        hasPreviousPage\n        startCursor\n      }\n      repositoryCount\n      edges {\n        ...searchItemAttr\n      }\n    }\n  }\n"): typeof import('./graphql').SearchReposBySubStringDocument;
+export function graphql(source: "\n  query SearchReposBySubString($query: String!, $first: Int,$last: Int, $after: String, $before: String) {\n    search(query: $query, type: REPOSITORY, first: $first, last: $last, after: $after, before: $before) {\n      pageInfo {\n        endCursor\n        hasNextPage\n        hasPreviousPage\n        startCursor\n      }\n      repositoryCount\n      edges {\n        ...searchItemAttr\n      }\n    }\n  }\n"): typeof import('./graphql').SearchReposBySubStringDocument;
 /**
  * The graphql function is used to parse GraphQL queries into a document that can be used by GraphQL clients.
  */

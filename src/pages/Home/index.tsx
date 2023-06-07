@@ -1,10 +1,10 @@
 import { observer } from "mobx-react-lite";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { ControllersContext, StoresContext } from "@/context";
 import { Card, CardDataType, SearchInput } from "@/components";
 import { RepositoryEdge } from "@/gql/graphql";
 import React from "react";
-import { useNavigate, useNavigation, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { RoutePath } from "@/models";
 
 type PageInfo = {
@@ -20,27 +20,21 @@ type PageInfo = {
 
 export const HomePage = observer(() => {
   const navigate = useNavigate();
-  // const rrr = useNavigation()
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { authontroller, reposController } = useContext(ControllersContext);
-  const { authStore, repositories } = useContext(StoresContext);
+  const { repositories } = useContext(StoresContext);
 
-  const isAuth = authStore.getAuthenticated;
   const viewerRepos = repositories.viewerRepos;
   const searchedRepos = repositories.searchedRepos;
 
+  const [pageState, setPageState] = useState<undefined | PageInfo>(undefined);
   const [searchString, setSearchString] = useState<string | undefined>();
 
   const logoutHandle = () => {
     authontroller.logout();
     navigate(RoutePath.login, { replace: true });
   };
-
-  useEffect(() => {
-    if (isAuth && !viewerRepos.length) {
-      reposController.fetchViewerRepos();
-    }
-  }, [isAuth, viewerRepos]);
 
   const currentList = useMemo(() => {
     if (searchString?.length) {
@@ -53,37 +47,58 @@ export const HomePage = observer(() => {
     return [];
   }, [searchString, searchedRepos, viewerRepos]);
 
-  const pageSize = 10;
-  const [endCursor, setEndCursor] = useState<string | undefined>(undefined);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-
-  const [pageState, setPageState] = useState<undefined | PageInfo>(undefined);
-
-  useEffect(() => {
-    if (searchString && searchString.length > 0) {
-      reposController.searchReposByString({ searchString }).then((data) => {
-        setPageState(data);
-      });
-    }
-  }, [searchString]);
-
   const loadHandle = (key: "after" | "before", cursor: string) => {
     const payload = key === "after" ? { after: cursor } : { before: cursor };
 
     searchString &&
       reposController
-        .searchReposByString({ searchString, ...payload })
+        .searchReposByString({
+          searchString,
+          ...payload,
+          firstLastKey: key === "after" ? "first" : "last",
+        })
         .then((data) => {
           setPageState(data);
         });
   };
 
+  useEffect(() => {
+    const urlSearchParam = searchParams.get("search");
+    if (!!urlSearchParam?.length && urlSearchParam !== searchString) {
+      setSearchString(urlSearchParam);
+    } else {
+      reposController.fetchViewerRepos().then((data) => {
+        setPageState(data);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!!searchString?.length) {
+      setSearchParams(`search=${searchString}`);
+      return;
+    }
+
+    setSearchParams();
+  }, [searchString]);
+
+  useEffect(() => {
+    if (!!searchString?.length) {
+      reposController.searchReposByString({ searchString }).then((data) => {
+        setPageState(data);
+      });
+    } else {
+      reposController.fetchViewerRepos().then((data) => {
+        setPageState(data);
+      });
+    }
+  }, [searchString]);
+
   return (
     <div>
       <div>HOME PAGE</div>
 
-      <SearchInput onTypingEnd={setSearchString} />
+      <SearchInput onTypingEnd={setSearchString} value={searchString} />
 
       <div>{!searchString?.length ? "Your repos:" : "Serched repos"} </div>
       <RepositoriesList repoList={currentList as RepositoryEdge[]} />
@@ -127,10 +142,3 @@ const RepositoriesList = React.memo(
     );
   }
 );
-
-// const RepositoryList = () => {
-
-//   return (
-
-//   );
-// };

@@ -4,11 +4,10 @@ import {
   ViewerRepositoriesQueryQuery,
   ViewerRepositoriesQueryQueryVariables,
   RepositoryAttrFragment,
-  SearchReposBySubStringQueryVariables,
-  SearchReposBySubStringQuery,
   SearchItemAttrFragment,
   SearchRepoByNameQuery,
   SearchRepoByNameQueryVariables,
+  SearchReposBySubStringQuery,
 } from "@/gql/graphql";
 
 import {
@@ -44,6 +43,11 @@ export default class RepositoriesController {
       this._store.setViewerRepos(
         repositories.edges as RepositoryAttrFragment[]
       );
+
+      return {
+        allCount: repositories.totalCount,
+        pageInfo: repositories.pageInfo,
+      };
     } catch (error) {
       console.log("fetchViewerRepos error", error);
     } finally {
@@ -51,23 +55,29 @@ export default class RepositoriesController {
     }
   }
 
-  async searchReposByString(props: {
+  async searchReposByString({
+    searchString,
+    after,
+    before,
+    firstLastKey = "first",
+  }: {
     searchString: string;
     after?: string | undefined;
     before?: string | undefined;
+    firstLastKey?: "first" | "last";
   }) {
     try {
-      const { search } = await this._api.request<SearchReposBySubStringQuery>(
-        SearchReposBySubString.toString(),
-        {
-          count: NUMBER_PER_PAGE,
-          query: props.searchString,
-          after: props.after ?? undefined,
-          before: props.before ?? undefined,
-        }
-      );
-      search.repositoryCount;
-      search.pageInfo;
+      const { search } =
+        await this._api.request<SearchReposBySubStringQuery>(
+          SearchReposBySubString.toString(),
+          {
+            [firstLastKey]: NUMBER_PER_PAGE,
+            query: searchString,
+            after: after ?? undefined,
+            before: before ?? undefined,
+          }
+        );
+
       this._store.setSearchedRepos(search?.edges as SearchItemAttrFragment[]);
       return { allCount: search.repositoryCount, pageInfo: search.pageInfo };
     } catch (error) {
