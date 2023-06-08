@@ -1,11 +1,12 @@
 import { observer } from "mobx-react-lite";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { ControllersContext, StoresContext } from "@/context";
-import { Card, CardDataType, SearchInput } from "@/components";
+import { Card, CardDataType, RepositoriesList, SearchInput } from "@/components";
 import { RepositoryEdge } from "@/gql/graphql";
 import React from "react";
-import { useNavigate, useNavigation, useSearchParams } from "react-router-dom";
-import { RoutePath } from "@/models";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { QueryPaginationParameters, RoutePath } from "@/models";
+import "./home.css";
 
 type PageInfo = {
   allCount: number;
@@ -20,27 +21,21 @@ type PageInfo = {
 
 export const HomePage = observer(() => {
   const navigate = useNavigate();
-  // const rrr = useNavigation()
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { authontroller, reposController } = useContext(ControllersContext);
-  const { authStore, repositories } = useContext(StoresContext);
+  const { repositories } = useContext(StoresContext);
 
-  const isAuth = authStore.getAuthenticated;
   const viewerRepos = repositories.viewerRepos;
   const searchedRepos = repositories.searchedRepos;
 
-  const [searchString, setSearchString] = useState<string | undefined>();
+  const [pageState, setPageState] = useState<undefined | PageInfo>(undefined);
+  const [searchString, setSearchString] = useState<string>("");
 
   const logoutHandle = () => {
     authontroller.logout();
-    navigate(RoutePath.login, { replace: true });
+    navigate(RoutePath.login, { replace: true, state: [] });
   };
-
-  useEffect(() => {
-    if (isAuth && !viewerRepos.length) {
-      reposController.fetchViewerRepos();
-    }
-  }, [isAuth, viewerRepos]);
 
   const currentList = useMemo(() => {
     if (searchString?.length) {
@@ -53,45 +48,79 @@ export const HomePage = observer(() => {
     return [];
   }, [searchString, searchedRepos, viewerRepos]);
 
-  const pageSize = 10;
-  const [endCursor, setEndCursor] = useState<string | undefined>(undefined);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const loadHandle = (
+    key: QueryPaginationParameters.AFTER | QueryPaginationParameters.BEFORE,
+    cursor: string
+  ) => {
+    const payload =
+      key === QueryPaginationParameters.AFTER
+        ? { after: cursor }
+        : { before: cursor };
 
-  const [pageState, setPageState] = useState<undefined | PageInfo>(undefined);
+    searchString &&
+      reposController
+        .searchReposByString({
+          searchString,
+          ...payload,
+          firstLastKey:
+            key === QueryPaginationParameters.AFTER
+              ? QueryPaginationParameters.FIRST
+              : QueryPaginationParameters.LAST,
+        })
+        .then((data) => {
+          setPageState(data);
+        });
+  };
 
   useEffect(() => {
-    if (searchString && searchString.length > 0) {
+    const urlSearchParam = searchParams.get("search");
+    if (!!urlSearchParam?.length && urlSearchParam !== searchString) {
+      setSearchString(urlSearchParam);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!!searchString?.length) {
+      setSearchParams(`search=${searchString}`);
+      return;
+    }
+
+    setSearchParams();
+  }, [searchString]);
+
+  useEffect(() => {
+    if (!!searchString?.length) {
       reposController.searchReposByString({ searchString }).then((data) => {
         setPageState(data);
       });
     }
   }, [searchString]);
 
-  const loadHandle = (key: "after" | "before", cursor: string) => {
-    const payload = key === "after" ? { after: cursor } : { before: cursor };
-
-    searchString &&
-      reposController
-        .searchReposByString({ searchString, ...payload })
-        .then((data) => {
-          setPageState(data);
-        });
-  };
+  useEffect(() => {
+    if (!searchString.length && !searchParams.get("search")) {
+      reposController.fetchViewerRepos().then((data) => {
+        setPageState(data);
+      });
+    }
+  }, [searchString, searchParams]);
 
   return (
-    <div>
+    <div className="homePageWrapper">
       <div>HOME PAGE</div>
 
-      <SearchInput onTypingEnd={setSearchString} />
+      <SearchInput onTypingEnd={setSearchString} value={searchString} />
 
-      <div>{!searchString?.length ? "Your repos:" : "Serched repos"} </div>
-      <RepositoriesList repoList={currentList as RepositoryEdge[]} />
-
-      <div>
+      <div className="repositoriesListContainer">
+        <div>{!searchString?.length ? "Your repos:" : "Searched repos"} </div>
+        <RepositoriesList repoList={currentList as RepositoryEdge[]} />
+      </div>
+      <div className="paginatorContainer">
         <button
           onClick={() =>
-            loadHandle("before", pageState?.pageInfo.startCursor as string)
+            loadHandle(
+              QueryPaginationParameters.BEFORE,
+              pageState?.pageInfo.startCursor as string
+            )
           }
           disabled={!pageState?.pageInfo.hasPreviousPage}
         >
@@ -99,7 +128,10 @@ export const HomePage = observer(() => {
         </button>
         <button
           onClick={() =>
-            loadHandle("after", pageState?.pageInfo.endCursor as string)
+            loadHandle(
+              QueryPaginationParameters.AFTER,
+              pageState?.pageInfo.endCursor as string
+            )
           }
           disabled={!pageState?.pageInfo.hasNextPage}
         >
@@ -107,30 +139,9 @@ export const HomePage = observer(() => {
         </button>
       </div>
 
-      <button onClick={logoutHandle}>logout</button>
+      <button className="logoutBtn" onClick={logoutHandle}>logout</button>
     </div>
   );
 });
 
-const RepositoriesList = React.memo(
-  ({ repoList }: { repoList: RepositoryEdge[] }) => {
-    return (
-      <div>
-        <ul>
-          {repoList.map((r) => (
-            <li key={r.cursor}>
-              <Card data={r.node as unknown as CardDataType} />
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  }
-);
 
-// const RepositoryList = () => {
-
-//   return (
-
-//   );
-// };

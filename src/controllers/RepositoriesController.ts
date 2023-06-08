@@ -4,11 +4,10 @@ import {
   ViewerRepositoriesQueryQuery,
   ViewerRepositoriesQueryQueryVariables,
   RepositoryAttrFragment,
-  SearchReposBySubStringQueryVariables,
-  SearchReposBySubStringQuery,
   SearchItemAttrFragment,
   SearchRepoByNameQuery,
   SearchRepoByNameQueryVariables,
+  SearchReposBySubStringQuery,
 } from "@/gql/graphql";
 
 import {
@@ -17,7 +16,7 @@ import {
   ViewerRepositories,
 } from "@/models/queries";
 import { NUMBER_PER_PAGE } from "@/constants";
-import { SerchedRepo } from "src/models";
+import { QueryPaginationParameters, SerchedRepo } from "@/models";
 
 export default class RepositoriesController {
   private readonly _store: RepositoriesStoreType;
@@ -44,6 +43,11 @@ export default class RepositoriesController {
       this._store.setViewerRepos(
         repositories.edges as RepositoryAttrFragment[]
       );
+
+      return {
+        allCount: repositories.totalCount,
+        pageInfo: repositories.pageInfo,
+      };
     } catch (error) {
       console.log("fetchViewerRepos error", error);
     } finally {
@@ -51,23 +55,30 @@ export default class RepositoriesController {
     }
   }
 
-  async searchReposByString(props: {
+  async searchReposByString({
+    searchString,
+    after,
+    before,
+    firstLastKey = QueryPaginationParameters.FIRST,
+  }: {
     searchString: string;
     after?: string | undefined;
     before?: string | undefined;
+    firstLastKey?:
+      | QueryPaginationParameters.FIRST
+      | QueryPaginationParameters.LAST;
   }) {
     try {
       const { search } = await this._api.request<SearchReposBySubStringQuery>(
         SearchReposBySubString.toString(),
         {
-          count: NUMBER_PER_PAGE,
-          query: props.searchString,
-          after: props.after ?? undefined,
-          before: props.before ?? undefined,
+          [firstLastKey]: NUMBER_PER_PAGE,
+          query: searchString,
+          after: after ?? undefined,
+          before: before ?? undefined,
         }
       );
-      search.repositoryCount;
-      search.pageInfo;
+
       this._store.setSearchedRepos(search?.edges as SearchItemAttrFragment[]);
       return { allCount: search.repositoryCount, pageInfo: search.pageInfo };
     } catch (error) {
