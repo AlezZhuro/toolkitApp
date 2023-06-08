@@ -22,21 +22,18 @@ export enum ResponseErrorType {
   BadVerificationCode = "bad_verification_code",
   BadCredentials = "Bad credentials",
 }
+
+export enum QueryPaginationParameters {
+  AFTER = "after",
+  BEFORE = "before",
+  FIRST = "first",
+  LAST = "last",
+}
 export type ObjectType = Record<string, unknown> | null | undefined;
 
 export interface IResponseError {
   isError: boolean;
   message: string;
-}
-
-export interface IPaginatedProps {
-  pageSize: number;
-  pageIndex: number;
-  totalItems: number;
-}
-
-export interface IPaginatedResponse<Type> extends IPaginatedProps {
-  items: Type[];
 }
 
 export interface SerchedRepo {

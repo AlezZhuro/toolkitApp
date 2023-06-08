@@ -5,7 +5,7 @@ import { Card, CardDataType, SearchInput } from "@/components";
 import { RepositoryEdge } from "@/gql/graphql";
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { RoutePath } from "@/models";
+import { QueryPaginationParameters, RoutePath } from "@/models";
 
 type PageInfo = {
   allCount: number;
@@ -47,15 +47,24 @@ export const HomePage = observer(() => {
     return [];
   }, [searchString, searchedRepos, viewerRepos]);
 
-  const loadHandle = (key: "after" | "before", cursor: string) => {
-    const payload = key === "after" ? { after: cursor } : { before: cursor };
+  const loadHandle = (
+    key: QueryPaginationParameters.AFTER | QueryPaginationParameters.BEFORE,
+    cursor: string
+  ) => {
+    const payload =
+      key === QueryPaginationParameters.AFTER
+        ? { after: cursor }
+        : { before: cursor };
 
     searchString &&
       reposController
         .searchReposByString({
           searchString,
           ...payload,
-          firstLastKey: key === "after" ? "first" : "last",
+          firstLastKey:
+            key === QueryPaginationParameters.AFTER
+              ? QueryPaginationParameters.FIRST
+              : QueryPaginationParameters.LAST,
         })
         .then((data) => {
           setPageState(data);
@@ -106,7 +115,10 @@ export const HomePage = observer(() => {
       <div>
         <button
           onClick={() =>
-            loadHandle("before", pageState?.pageInfo.startCursor as string)
+            loadHandle(
+              QueryPaginationParameters.BEFORE,
+              pageState?.pageInfo.startCursor as string
+            )
           }
           disabled={!pageState?.pageInfo.hasPreviousPage}
         >
@@ -114,7 +126,10 @@ export const HomePage = observer(() => {
         </button>
         <button
           onClick={() =>
-            loadHandle("after", pageState?.pageInfo.endCursor as string)
+            loadHandle(
+              QueryPaginationParameters.AFTER,
+              pageState?.pageInfo.endCursor as string
+            )
           }
           disabled={!pageState?.pageInfo.hasNextPage}
         >

@@ -16,7 +16,7 @@ import {
   ViewerRepositories,
 } from "@/models/queries";
 import { NUMBER_PER_PAGE } from "@/constants";
-import { SerchedRepo } from "src/models";
+import { QueryPaginationParameters, SerchedRepo } from "@/models";
 
 export default class RepositoriesController {
   private readonly _store: RepositoriesStoreType;
@@ -59,24 +59,25 @@ export default class RepositoriesController {
     searchString,
     after,
     before,
-    firstLastKey = "first",
+    firstLastKey = QueryPaginationParameters.FIRST,
   }: {
     searchString: string;
     after?: string | undefined;
     before?: string | undefined;
-    firstLastKey?: "first" | "last";
+    firstLastKey?:
+      | QueryPaginationParameters.FIRST
+      | QueryPaginationParameters.LAST;
   }) {
     try {
-      const { search } =
-        await this._api.request<SearchReposBySubStringQuery>(
-          SearchReposBySubString.toString(),
-          {
-            [firstLastKey]: NUMBER_PER_PAGE,
-            query: searchString,
-            after: after ?? undefined,
-            before: before ?? undefined,
-          }
-        );
+      const { search } = await this._api.request<SearchReposBySubStringQuery>(
+        SearchReposBySubString.toString(),
+        {
+          [firstLastKey]: NUMBER_PER_PAGE,
+          query: searchString,
+          after: after ?? undefined,
+          before: before ?? undefined,
+        }
+      );
 
       this._store.setSearchedRepos(search?.edges as SearchItemAttrFragment[]);
       return { allCount: search.repositoryCount, pageInfo: search.pageInfo };
