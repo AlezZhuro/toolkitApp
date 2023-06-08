@@ -1,11 +1,12 @@
 import { observer } from "mobx-react-lite";
 import { useContext, useEffect, useMemo, useState } from "react";
 import { ControllersContext, StoresContext } from "@/context";
-import { Card, CardDataType, SearchInput } from "@/components";
+import { Card, CardDataType, RepositoriesList, SearchInput } from "@/components";
 import { RepositoryEdge } from "@/gql/graphql";
 import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { QueryPaginationParameters, RoutePath } from "@/models";
+import "./home.css";
 
 type PageInfo = {
   allCount: number;
@@ -29,11 +30,11 @@ export const HomePage = observer(() => {
   const searchedRepos = repositories.searchedRepos;
 
   const [pageState, setPageState] = useState<undefined | PageInfo>(undefined);
-  const [searchString, setSearchString] = useState<string | undefined>();
+  const [searchString, setSearchString] = useState<string>("");
 
   const logoutHandle = () => {
     authontroller.logout();
-    navigate(RoutePath.login, { replace: true });
+    navigate(RoutePath.login, { replace: true, state: [] });
   };
 
   const currentList = useMemo(() => {
@@ -75,10 +76,6 @@ export const HomePage = observer(() => {
     const urlSearchParam = searchParams.get("search");
     if (!!urlSearchParam?.length && urlSearchParam !== searchString) {
       setSearchString(urlSearchParam);
-    } else {
-      reposController.fetchViewerRepos().then((data) => {
-        setPageState(data);
-      });
     }
   }, []);
 
@@ -96,23 +93,28 @@ export const HomePage = observer(() => {
       reposController.searchReposByString({ searchString }).then((data) => {
         setPageState(data);
       });
-    } else {
+    }
+  }, [searchString]);
+
+  useEffect(() => {
+    if (!searchString.length && !searchParams.get("search")) {
       reposController.fetchViewerRepos().then((data) => {
         setPageState(data);
       });
     }
-  }, [searchString]);
+  }, [searchString, searchParams]);
 
   return (
-    <div>
+    <div className="homePageWrapper">
       <div>HOME PAGE</div>
 
       <SearchInput onTypingEnd={setSearchString} value={searchString} />
 
-      <div>{!searchString?.length ? "Your repos:" : "Serched repos"} </div>
-      <RepositoriesList repoList={currentList as RepositoryEdge[]} />
-
-      <div>
+      <div className="repositoriesListContainer">
+        <div>{!searchString?.length ? "Your repos:" : "Searched repos"} </div>
+        <RepositoriesList repoList={currentList as RepositoryEdge[]} />
+      </div>
+      <div className="paginatorContainer">
         <button
           onClick={() =>
             loadHandle(
@@ -137,23 +139,9 @@ export const HomePage = observer(() => {
         </button>
       </div>
 
-      <button onClick={logoutHandle}>logout</button>
+      <button className="logoutBtn" onClick={logoutHandle}>logout</button>
     </div>
   );
 });
 
-const RepositoriesList = React.memo(
-  ({ repoList }: { repoList: RepositoryEdge[] }) => {
-    return (
-      <div>
-        <ul>
-          {repoList.map((r) => (
-            <li key={r.cursor}>
-              <Card data={r.node as unknown as CardDataType} />
-            </li>
-          ))}
-        </ul>
-      </div>
-    );
-  }
-);
+

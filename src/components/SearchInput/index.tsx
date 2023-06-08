@@ -1,6 +1,6 @@
-import { ChangeEvent, useCallback, useEffect } from "react";
+import React, { ChangeEvent, useCallback, useEffect } from "react";
 import { useDebounce } from "@/hooks";
-import React from "react";
+import './SearchInput.css'
 
 type Props = {
   onTypingEnd: (searchString: string) => void;
